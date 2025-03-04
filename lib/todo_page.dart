@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
+import 'medicamento.dart';
 
 class ToDoPage extends StatefulWidget {
   const ToDoPage({super.key});
@@ -9,7 +10,7 @@ class ToDoPage extends StatefulWidget {
 }
 
 class _ToDoPageState extends State<ToDoPage> {
-  Box? todoBox;
+  Box<Map>? todoBox;
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _hourController = TextEditingController();
@@ -17,16 +18,15 @@ class _ToDoPageState extends State<ToDoPage> {
   @override
   void initState() {
     super.initState();
-    todoBox = Hive.box('todoBox');
+    todoBox = Hive.box<Map>('todoBox');
   }
 
   void _addTodo(String title, int quantity, String hour) {
-    final newTodo = {
-      'title': title,
-      'quantity': quantity,
-      'hour': hour,
-      'isCompleted': false,
-    };
+    final newTodo = Medicamento(
+      title: title,
+      quantity: quantity,
+      hour: hour,
+    ).toMap();
     setState(() {
       todoBox?.add(newTodo);
     });
@@ -39,11 +39,14 @@ class _ToDoPageState extends State<ToDoPage> {
   }
 
   void _toggleCompletion(int index) {
-    final todo = todoBox?.getAt(index);
-    todo['isCompleted'] = !todo['isCompleted'];
-    setState(() {
-      todoBox?.putAt(index, todo);
-    });
+    final todoMap = todoBox?.getAt(index);
+    if (todoMap != null) {
+      final todo = Medicamento.fromMap(todoMap.cast<String, dynamic>());
+      todo.isCompleted = !todo.isCompleted;
+      setState(() {
+        todoBox?.putAt(index, todo.toMap());
+      });
+    }
   }
 
   @override
@@ -108,18 +111,20 @@ class _ToDoPageState extends State<ToDoPage> {
                 ? ListView.builder(
                     itemCount: todoBox!.length,
                     itemBuilder: (context, index) {
-                      final todo = todoBox!.getAt(index);
+                      final todoMap = todoBox!.getAt(index);
+                      final todo =
+                          Medicamento.fromMap(todoMap!.cast<String, dynamic>());
                       return ListTile(
                         title: Text(
-                          '${todo['title']} - Cantidad: ${todo['quantity']} - Hora: ${todo['hour']}',
+                          '${todo.title} - Cantidad: ${todo.quantity} - Hora: ${todo.hour}',
                           style: TextStyle(
-                            decoration: todo['isCompleted']
+                            decoration: todo.isCompleted
                                 ? TextDecoration.lineThrough
                                 : TextDecoration.none,
                           ),
                         ),
                         trailing: Checkbox(
-                          value: todo['isCompleted'],
+                          value: todo.isCompleted,
                           onChanged: (_) {
                             _toggleCompletion(index);
                           },
