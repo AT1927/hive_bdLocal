@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'To-Do App with Hive',
+      title: 'Medicines App with Hive',
       home: ToDoPage(),
     );
   }
